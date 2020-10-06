@@ -1,0 +1,23 @@
+{
+    "name": "babylonnpmtest",
+    "version": "1.0.0",
+    "description": "testing npm with babylon",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "webpack-dev-server --config ./webpack.config.js"
+    },
+    "author": "riven",
+    "license": "ISC",
+    "dependencies": {
+        "ammo.js": "github:kripken/ammo.js"
+    },
+    "devDependencies": {
+        "@babylonjs/core": "^4.1.0",
+        "@babylonjs/loaders": "^4.1.0",
+        "@babylonjs/materials": "^4.1.0",
+        "webpack": "^4.44.2",
+        "webpack-cli": "^3.3.12",
+        "webpack-dev-server": "^3.11.0"
+    }
+}
