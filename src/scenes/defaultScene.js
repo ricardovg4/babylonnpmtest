@@ -25,8 +25,8 @@ export default async function createScene(engine, canvas) {
     // Hemispheric light
     const light = new BABYLON.HemisphericLight('HemiLight', new BABYLON.Vector3(0, 1, 0), scene);
     light.intensity = 0.7;
-    const light2 = new BABYLON.PointLight('pointLight', new BABYLON.Vector3(2, -20, 0), scene);
-    light2.intensity = 0.8;
+    // const light2 = new BABYLON.PointLight('pointLight', new BABYLON.Vector3(2, -20, 0), scene);
+    // light2.intensity = 0.8;
 
     // enable physics
     // scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.AmmoJSPlugin());
@@ -35,14 +35,26 @@ export default async function createScene(engine, canvas) {
     // Ground import
     ground(scene);
 
+    // test materials
+    // purple
+    let myMaterial = new BABYLON.StandardMaterial('myMaterial', scene);
+    myMaterial.diffuseColor = new BABYLON.Color3(1, 0, 1);
+    //
+    let myMaterial2 = new BABYLON.StandardMaterial('myMaterial', scene);
+    myMaterial2.diffuseColor = new BABYLON.Color3(1, 5, 1);
+
     // meshes
-    let sphere = BABYLON.Mesh.CreateSphere('sphere', 16, 2, scene);
+    let sphere = BABYLON.Mesh.CreateSphere('sphere', 8, 2, scene);
     sphere.position.y = 10;
     sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+    sphere.material = myMaterial;
+    // sphere.physicsImpostor.setAngularVelocity(new BABYLON.Quaternion(1, 0, 1, 0));
+    // sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, 0), sphere.getAbsolutePosition());
 
-    let box = BABYLON.MeshBuilder.CreateBox('box2', { width: 2, depth: 2, height: 10 }, scene);
+    let box = BABYLON.MeshBuilder.CreateBox('box2', { width: 1, depth: 2, height: 10 }, scene);
     box.position.set(10, 0, 10);
-    box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 2 }, scene);
+    box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0.2, restitution: 0, friction: 0 }, scene);
+    box.material = myMaterial2;
 
     // import low poly car
     let gltf = BABYLON.SceneLoader.ImportMesh('', '../models/low-poly_truck_car_drifter/', 'scene.gltf', scene, (model) => {
@@ -83,17 +95,23 @@ export default async function createScene(engine, canvas) {
                 map[evt.sourceEvent.key] = evt.sourceEvent.type == 'keydown';
             })
         );
+
+        //
         scene.registerBeforeRender(() => {
-            if (map['w']) {
+            if (map['w'] || map['W']) {
                 carParent.translate(BABYLON.Axis.X, 0.4, BABYLON.Space.LOCAL);
             }
-            if (map['s']) {
+            if (map['s'] || map['S']) {
                 carParent.translate(BABYLON.Axis.X, -0.4, BABYLON.Space.LOCAL);
             }
-            if (map['a']) {
+            if ((map['a'] || map['A']) && (map['s'] || map['S'])) {
+                carParent.rotate(BABYLON.Axis.Y, Math.PI / 120, BABYLON.Space.LOCAL);
+            } else if (map['a'] || map['A']) {
                 carParent.rotate(BABYLON.Axis.Y, -Math.PI / 120, BABYLON.Space.LOCAL);
             }
-            if (map['d']) {
+            if ((map['d'] || map['D']) && (map['s'] || map['S'])) {
+                carParent.rotate(BABYLON.Axis.Y, -Math.PI / 120, BABYLON.Space.LOCAL);
+            } else if (map['d'] || map['D']) {
                 carParent.rotate(BABYLON.Axis.Y, Math.PI / 120, BABYLON.Space.LOCAL);
             }
         });
