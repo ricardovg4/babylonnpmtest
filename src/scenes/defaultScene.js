@@ -9,7 +9,7 @@ import { ammoReadyPromise, ammoModule } from '../externals/ammoPromisified';
 // import meshes
 import { ground, planeExport } from '../meshes/ground';
 import { carMesh, carMeshAbsolutePosition, carExport } from '../meshes/carMesh';
-import { saloonMesh } from '../meshes/saloonMesh';
+// import { saloonMesh } from '../meshes/saloonMesh';
 import { goproMesh, goproExport } from '../meshes/goproMesh';
 
 // main function
@@ -38,7 +38,7 @@ export default async function createScene(engine, canvas) {
     // Ground import
     ground(scene);
     carMesh(scene);
-    saloonMesh(scene);
+    // saloonMesh(scene);
     goproMesh(scene, carMeshAbsolutePosition);
 
     // test materials
