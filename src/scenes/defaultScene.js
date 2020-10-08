@@ -1,12 +1,15 @@
 // module imports
 import * as BABYLON from '@babylonjs/core/Legacy/legacy';
-import '@babylonjs/loaders/glTF';
+// import '@babylonjs/loaders';
 
 // import ammoPromisified
 import { ammoReadyPromise, ammoModule } from '../externals/ammoPromisified';
 
 // import meshes
-import { ground } from '../models/ground';
+import { ground, planeExport } from '../meshes/ground';
+import { carMesh, carMeshAbsolutePosition, carExport } from '../meshes/carMesh';
+import { saloonMesh } from '../meshes/saloonMesh';
+import { goproMesh, goproExport } from '../meshes/goproMesh';
 
 // main function
 export default async function createScene(engine, canvas) {
@@ -15,18 +18,18 @@ export default async function createScene(engine, canvas) {
 
     // create the scene with the engine argument
     const scene = new BABYLON.Scene(engine);
-    console.log('createscene');
 
     // create camera
-    const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 10, new BABYLON.Vector3(40, 60, 0), scene);
+    const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 0, new BABYLON.Vector3(60, 90, 0), scene);
     camera.setTarget(BABYLON.Vector3.Zero());
+    // camera.setTarget(new BABYLON.Vector3(Math.PI, 50, Math.PI / 2));
     camera.attachControl(canvas, true);
 
     // Hemispheric light
-    const light = new BABYLON.HemisphericLight('HemiLight', new BABYLON.Vector3(0, 1, 0), scene);
+    const light = new BABYLON.HemisphericLight('HemiLight', new BABYLON.Vector3(0, 10, 0), scene);
     light.intensity = 0.7;
-    // const light2 = new BABYLON.PointLight('pointLight', new BABYLON.Vector3(2, -20, 0), scene);
-    // light2.intensity = 0.8;
+    const light2 = new BABYLON.PointLight('pointLight', new BABYLON.Vector3(2, 10, 0), scene);
+    light2.intensity = 0.5;
 
     // enable physics
     // scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.AmmoJSPlugin());
@@ -34,6 +37,9 @@ export default async function createScene(engine, canvas) {
 
     // Ground import
     ground(scene);
+    carMesh(scene);
+    saloonMesh(scene);
+    goproMesh(scene, carMeshAbsolutePosition);
 
     // test materials
     // purple
@@ -45,76 +51,115 @@ export default async function createScene(engine, canvas) {
 
     // meshes
     let sphere = BABYLON.Mesh.CreateSphere('sphere', 8, 2, scene);
-    sphere.position.y = 10;
+    sphere.position.set(20, 1, -10);
     sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
     sphere.material = myMaterial;
     // sphere.physicsImpostor.setAngularVelocity(new BABYLON.Quaternion(1, 0, 1, 0));
     // sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, 0), sphere.getAbsolutePosition());
 
-    let box = BABYLON.MeshBuilder.CreateBox('box2', { width: 1, depth: 2, height: 10 }, scene);
+    let box = BABYLON.MeshBuilder.CreateBox('box', { width: 1, depth: 2, height: 10 }, scene);
     box.position.set(10, 0, 10);
     box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0.2, restitution: 0, friction: 0 }, scene);
     box.material = myMaterial2;
 
-    // import low poly car
-    let gltf = BABYLON.SceneLoader.ImportMesh('', '../models/low-poly_truck_car_drifter/', 'scene.gltf', scene, (model) => {
-        let car = model[0];
-        car.scaling.scaleInPlace(0.01);
-        // car.rotation.y = Math.PI;
-        car.position.set(0, 0, 0);
+    let box2 = BABYLON.MeshBuilder.CreateBox('box2', { width: 1, depth: 2, height: 10 }, scene);
+    box2.position.set(10, 0, 14);
+    box2.physicsImpostor = new BABYLON.PhysicsImpostor(box2, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 20, restitution: 0, friction: 0.5 }, scene);
+    box2.material = myMaterial2;
+    box2.lookAt(new BABYLON.Vector3(20, 0, -10));
 
-        // was set as default and superseeded rotation
-        car.rotationQuaternion = null;
-
-        // car's box object for collisions
-        let boxCollider = BABYLON.MeshBuilder.CreateBox('box', { width: 6, depth: 4, height: 3 }, scene);
-        boxCollider.position.set(0, 0, 0);
-        boxCollider.position.y = 1.1;
-        boxCollider.isVisible = false;
-        boxCollider.physicsImpostor = new BABYLON.PhysicsImpostor(boxCollider, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
-
-        // car parent containing the car mesh and the imposter
-        let carParent = new BABYLON.Mesh('carParent', scene);
-        carParent.addChild(car);
-        carParent.addChild(boxCollider);
-        carParent.position.set(0, 0, 0);
-        carParent.physicsImpostor = new BABYLON.PhysicsImpostor(carParent, BABYLON.PhysicsImpostor.NoImpostor, { mass: 3 }, scene);
-
-        // object for multiple key presses
-        let map = {};
-        scene.actionManager = new BABYLON.ActionManager(scene);
-
-        scene.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyDownTrigger, function (evt) {
-                map[evt.sourceEvent.key] = evt.sourceEvent.type == 'keydown';
-            })
-        );
-
-        scene.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnKeyUpTrigger, function (evt) {
-                map[evt.sourceEvent.key] = evt.sourceEvent.type == 'keydown';
-            })
-        );
-
-        //
-        scene.registerBeforeRender(() => {
-            if (map['w'] || map['W']) {
-                carParent.translate(BABYLON.Axis.X, 0.4, BABYLON.Space.LOCAL);
-            }
-            if (map['s'] || map['S']) {
-                carParent.translate(BABYLON.Axis.X, -0.4, BABYLON.Space.LOCAL);
-            }
-            if ((map['a'] || map['A']) && (map['s'] || map['S'])) {
-                carParent.rotate(BABYLON.Axis.Y, Math.PI / 120, BABYLON.Space.LOCAL);
-            } else if (map['a'] || map['A']) {
-                carParent.rotate(BABYLON.Axis.Y, -Math.PI / 120, BABYLON.Space.LOCAL);
-            }
-            if ((map['d'] || map['D']) && (map['s'] || map['S'])) {
-                carParent.rotate(BABYLON.Axis.Y, -Math.PI / 120, BABYLON.Space.LOCAL);
-            } else if (map['d'] || map['D']) {
-                carParent.rotate(BABYLON.Axis.Y, Math.PI / 120, BABYLON.Space.LOCAL);
-            }
+    async function meshAwait(meshToAwait) {
+        let meshPromise = new Promise((resolve, reject) => {
+            //     if (meshToAwait.mesh !== null) {
+            //         resolve(meshToAwait.mesh);
+            //     } else {
+            //         reject("didn't get it");
+            // }
+            // while (meshToAwait.mesh === null) {
+            //     setTimeout(() => {}, 100);
+            // }
+            resolve(meshToAwait.mesh);
         });
+        try {
+            let meshResult = await meshPromise;
+            console.log(meshResult);
+            return meshResult;
+        } catch (error) {
+            console.log('no');
+        }
+    }
+    // let meshPromise = new Promise((resolve, reject) => {
+    //     if (carExport.mesh !== null) {
+    //         resolve(carExport.mesh);
+    //     } else {
+    //         console.log('error');
+    //     }
+    // });
+    // let p = [meshPromise];
+    // Promise.all(p);
+    // .then((e) => {
+    //     console.log('yes');
+    // })
+    // .catch((e) => console.log('no'));
+
+    // working
+    // function ensureFooIsSet() {
+    //     return new Promise(function (resolve, reject) {
+    //         (function waitForFoo() {
+    //             if (carExport.mesh) return resolve();
+    //             setTimeout(waitForFoo, 30);
+    //         })();
+    //     });
+    // }
+    function ensureMeshIsSet(meshExport) {
+        return new Promise(function (resolve, reject) {
+            function waitForMesh() {
+                if (meshExport.mesh) return resolve();
+                setTimeout(waitForMesh, 30);
+            }
+            waitForMesh();
+        });
+    }
+
+    let box4 = BABYLON.MeshBuilder.CreateBox('box4', { width: 2, depth: 4, height: 2 }, scene);
+    box4.position.set(5, 0, 5);
+    // meshAwait(carExport);
+    // let plane = new BABYLON.MeshBuilder.CreatePlane('plane', { size: 40 }, scene);
+    // plane.position.set(25, 1, -25);
+    // plane.rotation.x = Math.PI / 2;
+
+    scene.registerBeforeRender(() => {
+        ensureMeshIsSet(carExport)
+            // .then(() => console.log('success on mesh import'))
+            .then(() => {
+                ensureMeshIsSet(planeExport);
+                // .then(() => console.log('success on mesh import'));
+            })
+            .then(() => {
+                // if (carExport.mesh) {
+                //     if (carExport.mesh.intersectsMesh(planeExport.mesh, true)) {
+                //         console.log('collision intersection!');
+                //     }
+                // }
+                // console.log(planeExport.mesh);
+            });
+        if (carExport.mesh) {
+            if (carExport.mesh.intersectsMesh(planeExport.mesh, true)) {
+                console.log('collision intersection!');
+                goproExport.mesh.lookAt(carExport.mesh.getAbsolutePosition(), Math.PI / 16, Math.PI, 0);
+                planeExport.mesh.material = myMaterial;
+            } else {
+                planeExport.mesh.material = myMaterial2;
+            }
+        }
+        // console.log(Object.keys(carExport));
+        // carPromise.then((res) => console.log('success', carExport)).catch((rej) => console.log('nope'));
+        //     if (carExport.mesh.intersectsMesh(planeExport.mesh, false)) {
+        //         console.log('it works!');
+        //     }
+        // console.log(!!carExport.mesh);
     });
+    // console.log(carExport.mesh);
+
     return scene;
 }
