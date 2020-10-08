@@ -1,6 +1,7 @@
 // module imports
+// import lowPolyCar from '../../3d/low-poly_truck_car_drifter/samsung-controller.glb';
 import * as BABYLON from '@babylonjs/core/Legacy/legacy';
-// import '@babylonjs/loaders';
+import '@babylonjs/loaders';
 
 // import ammoPromisified
 import { ammoReadyPromise, ammoModule } from '../externals/ammoPromisified';
@@ -32,7 +33,6 @@ export default async function createScene(engine, canvas) {
     light2.intensity = 0.5;
 
     // enable physics
-    // scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.AmmoJSPlugin());
     scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.AmmoJSPlugin(true, ammoModule));
 
     // Ground import
@@ -88,29 +88,9 @@ export default async function createScene(engine, canvas) {
             console.log('no');
         }
     }
-    // let meshPromise = new Promise((resolve, reject) => {
-    //     if (carExport.mesh !== null) {
-    //         resolve(carExport.mesh);
-    //     } else {
-    //         console.log('error');
-    //     }
-    // });
-    // let p = [meshPromise];
-    // Promise.all(p);
-    // .then((e) => {
-    //     console.log('yes');
-    // })
-    // .catch((e) => console.log('no'));
+    // const importResult = await BABYLON.SceneLoader.ImportMeshAsync('', '', lowPolyCar, scene, undefined, '.glb');
+    // importResult.meshes[0].scaling.scaleInPlace(50);
 
-    // working
-    // function ensureFooIsSet() {
-    //     return new Promise(function (resolve, reject) {
-    //         (function waitForFoo() {
-    //             if (carExport.mesh) return resolve();
-    //             setTimeout(waitForFoo, 30);
-    //         })();
-    //     });
-    // }
     function ensureMeshIsSet(meshExport) {
         return new Promise(function (resolve, reject) {
             function waitForMesh() {
@@ -129,20 +109,20 @@ export default async function createScene(engine, canvas) {
     // plane.rotation.x = Math.PI / 2;
 
     scene.registerBeforeRender(() => {
-        ensureMeshIsSet(carExport)
-            // .then(() => console.log('success on mesh import'))
-            .then(() => {
-                ensureMeshIsSet(planeExport);
-                // .then(() => console.log('success on mesh import'));
-            })
-            .then(() => {
-                // if (carExport.mesh) {
-                //     if (carExport.mesh.intersectsMesh(planeExport.mesh, true)) {
-                //         console.log('collision intersection!');
-                //     }
-                // }
-                // console.log(planeExport.mesh);
-            });
+        // ensureMeshIsSet(carExport)
+        // .then(() => console.log('success on mesh import'))
+        // .then(() => {
+        // ensureMeshIsSet(planeExport);
+        // .then(() => console.log('success on mesh import'));
+        // })
+        // .then(() => {
+        // if (carExport.mesh) {
+        //     if (carExport.mesh.intersectsMesh(planeExport.mesh, true)) {
+        //         console.log('collision intersection!');
+        //     }
+        // }
+        // console.log(planeExport.mesh);
+        // });
         if (carExport.mesh) {
             if (carExport.mesh.intersectsMesh(planeExport.mesh, true)) {
                 console.log('collision intersection!');
@@ -152,7 +132,6 @@ export default async function createScene(engine, canvas) {
                 planeExport.mesh.material = myMaterial2;
             }
         }
-        // console.log(Object.keys(carExport));
         // carPromise.then((res) => console.log('success', carExport)).catch((rej) => console.log('nope'));
         //     if (carExport.mesh.intersectsMesh(planeExport.mesh, false)) {
         //         console.log('it works!');

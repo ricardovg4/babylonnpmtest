@@ -3,12 +3,23 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-    // needed to load ammo's npm
-    node: {
-        fs: 'empty'
-    },
-
     entry: path.resolve('./src/index.js'),
+
+    module: {
+        rules: [
+            {
+                test: /\.(glb|gltf)$/i,
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 8192
+                        }
+                    }
+                ]
+            }
+        ]
+    },
 
     plugins: [
         new HtmlWebpackPlugin({
@@ -17,5 +28,10 @@ module.exports = {
             // copies the content of the existing index.html to the new ./builds index.html
             template: path.resolve('./index.html')
         })
-    ]
+    ],
+
+    // needed to load ammo's npm
+    node: {
+        fs: 'empty'
+    }
 };
