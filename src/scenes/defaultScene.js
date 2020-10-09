@@ -106,30 +106,10 @@ export default async function createScene(engine, canvas) {
     box2.material = myMaterial2;
     box2.lookAt(new BABYLON.Vector3(20, 0, -10));
 
-    createBoxes(50, 6);
+    let box4 = BABYLON.MeshBuilder.CreateBox('box4', { width: 2, depth: 4, height: 2 }, scene);
+    box4.position.set(5, 0, 5);
 
-    async function meshAwait(meshToAwait) {
-        let meshPromise = new Promise((resolve, reject) => {
-            //     if (meshToAwait.mesh !== null) {
-            //         resolve(meshToAwait.mesh);
-            //     } else {
-            //         reject("didn't get it");
-            // }
-            // while (meshToAwait.mesh === null) {
-            //     setTimeout(() => {}, 100);
-            // }
-            resolve(meshToAwait.mesh);
-        });
-        try {
-            let meshResult = await meshPromise;
-            console.log(meshResult);
-            return meshResult;
-        } catch (error) {
-            console.log('no');
-        }
-    }
-    // const importResult = await BABYLON.SceneLoader.ImportMeshAsync('', '', lowPolyCar, scene, undefined, '.glb');
-    // importResult.meshes[0].scaling.scaleInPlace(50);
+    createBoxes(50, 6);
 
     function ensureMeshIsSet(meshExport) {
         return new Promise(function (resolve, reject) {
@@ -141,19 +121,9 @@ export default async function createScene(engine, canvas) {
         });
     }
 
-    let box4 = BABYLON.MeshBuilder.CreateBox('box4', { width: 2, depth: 4, height: 2 }, scene);
-    box4.position.set(5, 0, 5);
-    // meshAwait(carExport);
-    // let plane = new BABYLON.MeshBuilder.CreatePlane('plane', { size: 40 }, scene);
-    // plane.position.set(25, 1, -25);
-    // plane.rotation.x = Math.PI / 2;
     ensureMeshIsSet(carExport).then(() => {
-        // carExport.impostor.registerOnPhysicsCollide(planeExport.impostor, function (main, collided) {
-        //     console.log('balls!');
-        //     // main.object.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
-        // });
-        planeExport.mesh2.actionManager = new BABYLON.ActionManager(scene);
-        planeExport.mesh2.actionManager.registerAction(
+        planeExport.cameraPlane.mesh2.actionManager = new BABYLON.ActionManager(scene);
+        planeExport.cameraPlane.mesh2.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(
                 {
                     trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
@@ -164,37 +134,89 @@ export default async function createScene(engine, canvas) {
                     sphere2.position.set(-35, 40, 35);
                     sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 10002, restitution: 2.9 }, scene);
                     sphere2.material = myMaterial;
+                    goproExport.mesh.scalingDeterminant = 5;
+                    planeExport.cameraPlane.mesh.material = myMaterial;
+                }
+            )
+        );
+        planeExport.cameraPlane.mesh2.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                {
+                    trigger: BABYLON.ActionManager.OnIntersectionExitTrigger,
+                    parameter: carExport.mesh
+                },
+                function () {
+                    console.log('exit');
+                    goproExport.mesh.scalingDeterminant = 1;
+                    planeExport.cameraPlane.mesh.material = myMaterial2;
+                }
+            )
+        );
+        planeExport.restartPlane.mesh2.actionManager = new BABYLON.ActionManager(scene);
+        planeExport.restartPlane.mesh2.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                {
+                    trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
+                    parameter: carExport.mesh
+                },
+                function () {
+                    planeExport.restartPlane.mesh.material.diffuseColor = new BABYLON.Color3(1, 1, 0.2);
+                    for (let i = 0; i < boxes.length; i++) {
+                        boxes[i].dispose();
+                    }
+                    boxes = [];
+                }
+            )
+        );
+        planeExport.restartPlane.mesh2.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                {
+                    trigger: BABYLON.ActionManager.OnIntersectionExitTrigger,
+                    parameter: carExport.mesh
+                },
+                function () {
+                    planeExport.restartPlane.mesh.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+                    createBoxes(50, 6);
                 }
             )
         );
     });
 
+    // ensureMeshIsSet(planeExport.restartPlane.mesh).then(() => {
+    //     planeExport.restartPlane.mesh2.actionManager = new BABYLON.ActionManager(scene);
+    //     planeExport.restartPlane.mesh2.actionManager.registerAction(
+    //         new BABYLON.ExecuteCodeAction(
+    //             {
+    //                 trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
+    //                 parameter: carExport.mesh
+    //             },
+    //             function () {
+    //                 planeExport.restartPlane.mesh.material.diffuseColor = new BABYLON.Color3(1, 1, 0.2);
+    //                 console.log('plane restart');
+    //             }
+    //         )
+    //     );
+    //     // planeExport.restartPlane.mesh2.actionManager = new BABYLON.ActionManager(scene);
+    //     // planeExport.restartPlane.mesh2.actionManager.registerAction(
+    //     //     new BABYLON.ExecuteCodeAction(
+    //     //         {
+    //     //             trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
+    //     //             parameter: carExport.mesh
+    //     //         },
+    //     //         function () {
+    //     //             planeExport.restartPlane.mesh.material.diffuseColor = new BABYLON.Color3(1, 1, 0.2);
+    //     //             console.log('plane restart');
+    //     //         }
+    //     //     )
+    //     // );
+    // });
+
     scene.registerBeforeRender(() => {
-        // ensureMeshIsSet(carExport)
-        // .then(() => console.log('success on mesh import'))
-        // .then(() => {
-        // ensureMeshIsSet(planeExport);
-        // .then(() => console.log('success on mesh import'));
-        // })
-        // .then(() => {
-        // if (carExport.mesh) {
-        //     if (carExport.mesh.intersectsMesh(planeExport.mesh, true)) {
-        //         console.log('collision intersection!');
-        //     }
-        // }
-        // console.log(planeExport.mesh);
-        // });
+        // console.log(planeExport.restartPlane['mesh']);
         if (carExport.mesh) {
             // car intersects plane
-            if (carExport.mesh.intersectsMesh(planeExport.mesh2, true)) {
+            if (carExport.mesh.intersectsMesh(planeExport.cameraPlane.mesh2, true)) {
                 goproExport.mesh.lookAt(carExport.mesh.getAbsolutePosition(), Math.PI / 16, Math.PI, 0);
-                planeExport.mesh.material = myMaterial;
-                // let sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 8, 18, scene);
-                // sphere2.position.set(0, 50, -10);
-                // sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
-                // sphere2.material = myMaterial;
-            } else {
-                planeExport.mesh.material = myMaterial2;
             }
             // car intersect boxes
             for (let i = 0; i < boxes.length; i++) {
@@ -203,14 +225,7 @@ export default async function createScene(engine, canvas) {
                 }
             }
         }
-        // if (carExport.impostor)
-        // carPromise.then((res) => console.log('success', carExport)).catch((rej) => console.log('nope'));
-        //     if (carExport.mesh.intersectsMesh(planeExport.mesh, false)) {
-        //         console.log('it works!');
-        //     }
-        // console.log(!!carExport.mesh);
     });
-    // console.log(carExport.mesh);
 
     return scene;
 }
