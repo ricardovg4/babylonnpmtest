@@ -152,8 +152,8 @@ export default async function createScene(engine, canvas) {
         //     console.log('balls!');
         //     // main.object.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
         // });
-        planeExport.mesh.actionManager = new BABYLON.ActionManager(scene);
-        planeExport.mesh.actionManager.registerAction(
+        planeExport.mesh2.actionManager = new BABYLON.ActionManager(scene);
+        planeExport.mesh2.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(
                 {
                     trigger: BABYLON.ActionManager.OnIntersectionEnterTrigger,
@@ -162,7 +162,7 @@ export default async function createScene(engine, canvas) {
                 function () {
                     let sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 8, 18, scene);
                     sphere2.position.set(-35, 40, 35);
-                    sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 100, restitution: 0.9 }, scene);
+                    sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 10002, restitution: 2.9 }, scene);
                     sphere2.material = myMaterial;
                 }
             )
