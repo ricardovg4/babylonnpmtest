@@ -56,6 +56,8 @@ export async function carMesh(scene) {
     );
 
     carExport.mesh = boxCollider;
+    carExport.impostor = carParent.physicsImpostor;
+
     scene.registerBeforeRender(() => {
         carMeshAbsolutePosition.pos = car.getAbsolutePosition();
         box3.lookAt(car.getAbsolutePosition());
